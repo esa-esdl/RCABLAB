@@ -6,10 +6,11 @@ parseConfigFile<-function(cubepath) {
     if (!is.na(as.double(x[i,2]))) {
       cube.config[[x[i,1]]]=as.double(x[i,2])
     } else if (grepl("^datetime",x[i,2])) {
-      cube.config[[x[i,1]]]=strptime(x[i,2],"datetime.datetime(%Y, %m, %d, %H, %M)")
+      cube.config[[x[i,1]]]=as.POSIXlt(strptime(x[i,2],"datetime.datetime(%Y, %m, %d, %H, %M)"))
     }
     else {
       cube.config[[x[i,1]]]=x[i,2]
     }
   }
+  cube.config
 }
