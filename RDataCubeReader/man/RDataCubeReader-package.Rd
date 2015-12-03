@@ -1,6 +1,6 @@
-\name{DataCubeReader-package}
-\alias{DataCubeReader-package}
-\alias{DataCubeReader}
+\name{RDataCubeReader-package}
+\alias{RDataCubeReader-package}
+\alias{RDataCubeReader}
 \docType{package}
 \title{Reads data from the Earth System Datacube}
 }
@@ -9,12 +9,12 @@
 \details{
 
 The DESCRIPTION file:
-\packageDESCRIPTION{DataCubeReader}
-\packageIndices{DataCubeReader}
+\packageDESCRIPTION{RDataCubeReader}
+\packageIndices{RDataCubeReader}
 }
 \author{Fabian Gans}
 
-Maintainer: \packageMaintainer{DataCubeReader}
+Maintainer: \packageMaintainer{RDataCubeReader}
 }
 
 \keyword{ package }
