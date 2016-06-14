@@ -1,4 +1,4 @@
-Package: RDataCubeReader
+Package: RCABLAB
 Type: Package
 Title: Reads data from the Earth System Datacube
 Version: 0.1
@@ -7,5 +7,5 @@ Author: Fabian Gans
 Maintainer: Fabian Gans <fgans@bgc-jena.mpg.de>
 Depends: R (>= 3.0.0)
 Imports: RNetCDF
-Description: This is the official R interface for reading data from the Earth System data cube.
+Description: This is the R interface for reading data from the Earth System data cube.
 License: MIT

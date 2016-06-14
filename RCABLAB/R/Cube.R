@@ -19,18 +19,6 @@ open.cube<-function(
   ##A list a list containing some cube info, to be used for reading cube data.
 }
 
-.getTimesToRead<- function(time1,time2,config) {
-  NpY    = ceiling(365/config$temporal_res)
-  y1     = as.numeric(strftime(time1,"%Y"))
-  y2     = as.numeric(strftime(time2,"%Y"))
-  d1     = as.numeric(strftime(time1,"%j"))
-  index1 = round(d1/config$temporal_res)+1
-  d2     = as.numeric(strftime(time2,"%j"))
-  index2 = min(round(d2/config$temporal_res)+1,NpY)
-  ntimesteps = -index1 + index2 + (y2-y1)*NpY + 1
-  return(c(y1,index1,y2,index2,ntimesteps,NpY))
-}
-
 cube.read<-function(
   ##title<< Read data from an open Earth System Data Cube
   ##description<< Reads data from a datacube as specified by the user for a given variable, time, longitude and latitude range
@@ -49,9 +37,13 @@ cube.read<-function(
   grid_x2 = round((180.0 + longitude[2]) / config$spatial_res) - config$grid_x0
   
   
-  v<-.getTimesToRead(time[1],time[2],config)
+  r<-.getTimesToRead(time[1],time[2],config)
+  v=r$v
   y1<-v[1];i1<-v[2];y2<-v[3];i2<-v[4];ntime<-v[5];NpY<-v[6]
   outlist=list()
+  outlist$time=r$tout
+  outlist$longitude=((grid_x1:grid_x2)+config$grid_x0)*config$spatial_res-180-config$spatial_res/2
+  outlist$latitude=90-((grid_y1:grid_y2)+config$grid_y0)*config$spatial_res+config$spatial_res/2
   for (ivar in 1:length(variable)) {
     nc<-RNetCDF::open.nc(file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc")))
     if (y1==y2) {
@@ -84,17 +76,24 @@ cube.read<-function(
   ##A named list where each list entry contains the data for a single variable.
 }
 
-getTimeRanges<-function(
-  ##title<< Returns the datacube time steps
-  ##description<< For a given datacube and time range, returns all the time steps that would be returned by cube.read. This might be useful for plotting, time series analysis etc.
-  cube, ##<< The Datacube 
-  time=c(cube$config$start_time,cube$config$end_time-as.difftime(1,units="days")) ##<< Start and end time of the range to be read given as POSIXlt or POSIXct. Default is the whole datacube time range
-) {
-  config<-cube$config
+.getTimesToRead<- function(time1,time2,config) {
   NpY    = ceiling(365/config$temporal_res)
-  yrange = as.numeric(strftime(time[1],"%Y")):as.numeric(strftime(time[2],"%Y"))
-  days= as.difftime(rep(seq(0,365,8),length(yrange)),units="days")
-  years= ISOdate(rep(yrange,each=NpY),1,1,0,tz="UTC")
-  as.POSIXlt(days+years)
-  ##value<< a list of time steps
+  y1     = as.numeric(strftime(time1,"%Y"))
+  y2     = as.numeric(strftime(time2,"%Y"))
+  d1     = as.numeric(strftime(time1,"%j"))
+  index1 = round(d1/config$temporal_res)+1
+  d2     = as.numeric(strftime(time2,"%j"))
+  index2 = min(round(d2/config$temporal_res)+1,NpY)
+  ntimesteps = -index1 + index2 + (y2-y1)*NpY + 1
+  if (y1==y2) {
+    tout=ISOdate(y1,1,1,0)+as.difftime(seq(d1-1,d2,8),units="days")
+  } else if (y2==(y1+1)) {
+    tout=c(ISOdate(y1,1,1,0)+as.difftime(seq(d1-1,365,8),units="days"),
+           ISOdate(y2,1,1,0)+as.difftime(seq(0,d2,8),units="days"))
+  } else {
+    tout=c(ISOdate(y1,1,1,0)+as.difftime(seq(d1-1,365,8),units="days"),
+           ISOdate(rep((y1+1):(y2-1),each=NpY),1,1,0)+as.difftime(rep(seq(0,365,8),(y2-y1-1)),units="days"),
+           ISOdate(y2,1,1,0)+as.difftime(seq(0,d2,8),units="days"))
+  }
+  return(list(v=c(y1,index1,y2,index2,ntimesteps,NpY),tout=tout))
 }
