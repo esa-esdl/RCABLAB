@@ -19,7 +19,7 @@ open.cube<-function(
   ##A list a list containing some cube info, to be used for reading cube data.
 }
 
-cube.read<-function(
+read.cube<-function(
   ##title<< Read data from an open Earth System Data Cube
   ##description<< Reads data from a datacube as specified by the user for a given variable, time, longitude and latitude range
   cube, ##<< Datacube handle as returned from cube.open

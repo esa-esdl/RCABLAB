@@ -1,8 +1,8 @@
-\name{cube.read}
-\alias{cube.read}
+\name{read.cube}
+\alias{read.cube}
 \title{Read data from an open Earth System Data Cube}
 \description{Reads data from a datacube as specified by the user for a given variable, time, longitude and latitude range}
-\usage{cube.read(cube, variable = cube$data.dir.entries, time = c(cube$config$start_time, 
+\usage{read.cube(cube, variable = cube$data.dir.entries, time = c(cube$config$start_time, 
     cube$config$end_time - as.difftime(1, units = "days")), longitude = c(-180, 
     180), latitude = c(-90, 90))}
 \arguments{
