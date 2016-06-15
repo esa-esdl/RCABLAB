@@ -1,4 +1,4 @@
-parseConfigFile<-function(
+.parseConfigFile<-function(
   ##title<< Parse the config file of the DataCube
   ##description<< Reads the cube.config file from the datacube's base directory and returns a list with its content
   cubepath ##<< Path to the datacube

@@ -5,7 +5,7 @@ open.cube<-function(
 ) {
   ##author<<
   ##Fabian Gans, Miguel D. Mahecha, MPI BGC Jena, Germany, fgans@bgc-jena.mpg.de mmahecha@bgc-jena.mpg.de
-  cube.config<-parseConfigFile(cubepath)
+  cube.config<-.parseConfigFile(cubepath)
   
   data.dir<-file.path(cubepath,"data")
   data.dir.entries       <-list.files(data.dir)
