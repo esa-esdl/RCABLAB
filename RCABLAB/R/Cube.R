@@ -30,12 +30,19 @@ read.cube<-function(
 ) {
   ##author<<
   ##Fabian Gans, Miguel D. Mahecha, MPI BGC Jena, Germany, fgans@bgc-jena.mpg.de mmahecha@bgc-jena.mpg.de
+  
+  if (length(longitude)== 1) longitude<-c(longitude,longitude)
+  if (length(latitude) == 1) latitude <-c(latitude ,latitude)
+  if (length(time)     == 1) time     <-c(time,time)
+  
   config  <- cube$config
   grid_y1 = round((90.0 - latitude[2]) / config$spatial_res) - config$grid_y0 + 1
   grid_y2 = round((90.0 - latitude[1]) / config$spatial_res) - config$grid_y0
   grid_x1 = round((180.0 + longitude[1]) / config$spatial_res) - config$grid_x0 + 1
   grid_x2 = round((180.0 + longitude[2]) / config$spatial_res) - config$grid_x0
   
+  if (grid_y1-1==grid_y2) grid_y2=grid_y2+1
+  if (grid_x1-1==grid_x2) grid_x2=grid_x2+1
   
   r<-.getTimesToRead(time[1],time[2],config)
   v=r$v
