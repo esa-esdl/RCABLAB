@@ -51,13 +51,14 @@ read.cube<-function(
   outlist$time=r$tout
   outlist$longitude=((grid_x1:grid_x2)+config$grid_x0)*config$spatial_res-180-config$spatial_res/2
   outlist$latitude=90-((grid_y1:grid_y2)+config$grid_y0)*config$spatial_res+config$spatial_res/2
+  outlist$data=list()
   for (ivar in 1:length(variable)) {
     if (y1==y2) {
       filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
-        nc<-RNetCDF::open.nc(filenamecur)
-        outlist[[variable[ivar]]] <- RNetCDF::var.get.nc(nc,variable[ivar],start=c(grid_x1,grid_y1,i1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2-i1+1))
-        RNetCDF::close.nc(nc)
+        nc<-ncdf4::nc_open(filenamecur)
+        outlist[[variable[ivar]]] <- ncdf4::ncvar_get(nc,variable[ivar],start=c(grid_x1,grid_y1,i1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2-i1+1))
+        ncdf4::nc_close(nc)
       } else {
         outlist[[variable[ivar]]] <- array(NA,dim=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,ntime))
       }
@@ -67,9 +68,9 @@ read.cube<-function(
       #Read from first year
       filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
-        nc<-RNetCDF::open.nc(filenamecur)
-        outar[,,1:(NpY-i1+1)]=RNetCDF::var.get.nc(nc,variable[ivar],start=c(grid_x1,grid_y1,i1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY-i1+1))
-        RNetCDF::close.nc(nc)
+        nc<-ncdf4::nc_open(filenamecur)
+        outar[,,1:(NpY-i1+1)]=ncdf4::ncvar_get(nc,variable[ivar],start=c(grid_x1,grid_y1,i1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY-i1+1))
+        ncdf4::nc_close(nc)
       } else {
         outar[,,1:(NpY-i1+1)]=NA
       }
@@ -79,9 +80,9 @@ read.cube<-function(
         for (y in (y1+1):(y2-1)) {
           filenamecur <- file.path(cube$base.dir,"data",variable[ivar],paste0(y,"_",variable[ivar],".nc"))
           if (file.exists(filenamecur)) {
-            nc<-RNetCDF::open.nc(filenamecur)
-            outar[,,ifirst:(ifirst+NpY-1)]=RNetCDF::var.get.nc(nc,variable[ivar],start=c(grid_x1,grid_y1,1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY))
-            RNetCDF::close.nc(nc)
+            nc<-ncdf4::nc_open(filenamecur)
+            outar[,,ifirst:(ifirst+NpY-1)]=ncdf4::ncvar_get(nc,variable[ivar],start=c(grid_x1,grid_y1,1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY))
+            ncdf4::nc_close(nc)
           } else {
             outar[,,ifirst:(ifirst+NpY-1)]=NA
           }
@@ -91,13 +92,13 @@ read.cube<-function(
       #Read from last Year
       filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y2,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
-        nc<-RNetCDF::open.nc(filenamecur)
-        outar[,,(ntime-i2+1):ntime]=RNetCDF::var.get.nc(nc,variable[ivar],start=c(grid_x1,grid_y1,1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2))
-        RNetCDF::close.nc(nc)
+        nc<-ncdf4::nc_open(filenamecur)
+        outar[,,(ntime-i2+1):ntime]=ncdf4::ncvar_get(nc,variable[ivar],start=c(grid_x1,grid_y1,1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2))
+        ncdf4::nc_close(nc)
       } else {
         outar[,,(ntime-i2+1):ntime]=NA
       }
-      outlist[[variable[ivar]]]<-outar
+      outlist$data[[variable[ivar]]]<-outar
     }
   }
   outlist

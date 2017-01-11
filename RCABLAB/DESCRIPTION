@@ -6,6 +6,6 @@ Date: 2015-12-02
 Author: Fabian Gans
 Maintainer: Fabian Gans <fgans@bgc-jena.mpg.de>
 Depends: R (>= 3.0.0)
-Imports: RNetCDF
+Imports: ncdf4
 Description: This is the R interface for reading data from the Earth System data cube.
 License: MIT
