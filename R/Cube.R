@@ -106,24 +106,32 @@ read.cube<-function(
   ##A named list where each list entry contains the data for a single variable.
 }
 
-.getTimesToRead<- function(time1,time2,config) {
-  NpY    = ceiling(365/config$temporal_res)
-  y1     = as.numeric(strftime(time1,"%Y"))
-  y2     = as.numeric(strftime(time2,"%Y"))
-  d1     = as.numeric(strftime(time1,"%j"))
-  index1 = round(d1/config$temporal_res)+1
-  d2     = as.numeric(strftime(time2,"%j"))
-  index2 = min(round(d2/config$temporal_res)+1,NpY)
-  ntimesteps = -index1 + index2 + (y2-y1)*NpY + 1
-  if (y1==y2) {
-    tout=ISOdate(y1,1,1,0)+as.difftime(seq(d1-1,d2,8),units="days")
-  } else if (y2==(y1+1)) {
-    tout=c(ISOdate(y1,1,1,0)+as.difftime(seq(d1-1,365,8),units="days"),
-           ISOdate(y2,1,1,0)+as.difftime(seq(0,d2,8),units="days"))
+.getTimesToRead<- function(time1, time2, config) {
+
+  NpY        <- ceiling(365/config$temporal_res)
+  y1         <- as.numeric(strftime(time1, "%Y"))
+  y2         <- as.numeric(strftime(time2, "%Y"))
+  d1         <- as.numeric(strftime(time1, "%j"))
+  index1     <- round(d1/config$temporal_res)+1
+  d2         <- as.numeric(strftime(time2, "%j"))
+  index2     <- min(round(d2/config$temporal_res)+1, NpY)
+  ntimesteps <- -index1 + index2 + (y2 - y1) * NpY + 1
+
+  tout <- if (y1 == y2) {
+      ISOdate(y1, 1, 1, 0) + as.difftime(seq(d1 - 1, d2, 8), units = "days")
+  } else if (y2 == (y1 + 1)) {
+    c(
+      ISOdate(y1, 1, 1, 0) + as.difftime(seq(d1 - 1, 365, 8), units = "days"), 
+      ISOdate(y2, 1, 1, 0) + as.difftime(seq(0,       d2, 8), units = "days")
+    )
   } else {
-    tout=c(ISOdate(y1,1,1,0)+as.difftime(seq(d1-1,365,8),units="days"),
-           ISOdate(rep((y1+1):(y2-1),each=NpY),1,1,0)+as.difftime(rep(seq(0,365,8),(y2-y1-1)),units="days"),
-           ISOdate(y2,1,1,0)+as.difftime(seq(0,d2,8),units="days"))
+    c(
+      ISOdate(y1, 1, 1, 0) + as.difftime(seq(d1 - 1, 365, 8), units = "days"), 
+      ISOdate(rep((y1 + 1):(y2 - 1), each = NpY), 1, 1, 0) +
+        as.difftime(rep(seq(0, 365, 8), (y2-y1-1)), units = "days"), 
+      ISOdate(y2, 1, 1, 0)+as.difftime(seq(0, d2, 8), units = "days")
+    )
   }
-  return(list(v=c(y1,index1,y2,index2,ntimesteps,NpY),tout=tout))
+
+  list(v = c(y1, index1, y2, index2, ntimesteps, NpY), tout = tout)
 }
