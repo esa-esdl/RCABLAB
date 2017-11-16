@@ -10,6 +10,6 @@ test_that("number of output dimensions dimensions of the cube", {
       longitude = c(40),
       time = cube$config$start_time
     )
-    expect_equal(length(dim(d[[v]])), 3)
+    expect_equal(length(dim(d$data[[v]])), 3)
   }
 })

@@ -5,16 +5,25 @@ open.cube<-function(
 ) {
   ##author<<
   ##Fabian Gans, Miguel D. Mahecha, MPI BGC Jena, Germany, fgans@bgc-jena.mpg.de mmahecha@bgc-jena.mpg.de
-  cube.config<-.parseConfigFile(cubepath)
+  cube.config <- .parseConfigFile(cubepath)
 
   data.dir<-file.path(cubepath,"data")
-  data.dir.entries       <-list.files(data.dir)
-  data.dir.entries       <-sort(data.dir.entries)
-  var.name.to.index  <-1:length(data.dir.entries)
+  data.dir.entries  <- list.files(data.dir)
+  data.dir.entries  <- sort(data.dir.entries)
+  var.name.to.index <- 1:length(data.dir.entries)
   names(var.name.to.index) <- data.dir.entries
-  names(var.name.to.index)<-data.dir.entries
-  firstYearOffset=(as.double(strftime(cube.config$start_time,format="%j"))-1)/cube.config$temporal_res
-  return(list(base.dir=cubepath,config=cube.config,data.dir.entries=data.dir.entries,var.name.to.index=var.name.to.index,firstYearOffset=firstYearOffset))
+  names(var.name.to.index) <- data.dir.entries
+  firstYearOffset <-
+    (as.double(strftime(cube.config$start_time,format="%j")) - 1) /
+    cube.config$temporal_res
+
+  list(
+    base.dir          = cubepath,
+    config            = cube.config,
+    data.dir.entries  = data.dir.entries,
+    var.name.to.index = var.name.to.index,
+    firstYearOffset   = firstYearOffset
+  )
   ##value<<
   ##A list a list containing some cube info, to be used for reading cube data.
 }
@@ -31,9 +40,9 @@ read.cube<-function(
   ##author<<
   ##Fabian Gans, Miguel D. Mahecha, MPI BGC Jena, Germany, fgans@bgc-jena.mpg.de mmahecha@bgc-jena.mpg.de
 
-  if (length(longitude)== 1) longitude <- c(longitude, longitude)
-  if (length(latitude) == 1) latitude  <- c(latitude, latitude)
-  if (length(time)     == 1) time      <- c(time, time)
+  if (length(longitude) == 1) longitude <- c(longitude, longitude)
+  if (length(latitude)  == 1) latitude  <- c(latitude, latitude)
+  if (length(time)      == 1) time      <- c(time, time)
 
   config  <- cube$config
 
@@ -45,7 +54,7 @@ read.cube<-function(
   if (grid_y1-1 == grid_y2) grid_y2 <- grid_y2 + 1
   if (grid_x1-1 == grid_x2) grid_x2 <- grid_x2 + 1
 
-  r <- .getTimesToRead(time[1],time[2],config)
+  r <- .getTimesToRead(time[1], time[2], config)
   v <- r$v
   y1 <- v[1]; i1 <- v[2];
   y2 <- v[3]; i2 <- v[4];
@@ -53,16 +62,20 @@ read.cube<-function(
 
   outlist <- list()
   outlist$time      <- r$tout
-  outlist$longitude <- ((grid_x1:grid_x2)+config$grid_x0)*config$spatial_res-180-config$spatial_res/2
-  outlist$latitude  <- 90-((grid_y1:grid_y2)+config$grid_y0)*config$spatial_res+config$spatial_res/2
+  outlist$longitude <-
+    ((grid_x1:grid_x2)+config$grid_x0) * config$spatial_res - 180 -
+    config$spatial_res / 2
+  outlist$latitude  <-
+    90 - ((grid_y1:grid_y2) + config$grid_y0) * config$spatial_res +
+    config$spatial_res / 2
   outlist$data      <- list()
 
   for (ivar in 1:length(variable)) {
     if (y1 == y2) {
-      filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
+      filenamecur <- file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
         nc<-ncdf4::nc_open(filenamecur)
-        outlist[[variable[ivar]]] <-
+        outlist$data[[variable[ivar]]] <-
           ncdf4::ncvar_get(
             nc,
             variable[ivar],
@@ -73,13 +86,13 @@ read.cube<-function(
         ncdf4::nc_close(nc)
       } else {
         ## static variables
-        outlist[[variable[ivar]]] <- array(NA,dim=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,ntime))
+        outlist$data[[variable[ivar]]] <- array(NA,dim=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,ntime))
       }
     } else {
       #Allocate Space
       outar=array(0,dim = c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,ntime))
       #Read from first year
-      filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
+      filenamecur <- file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
         nc<-ncdf4::nc_open(filenamecur)
         outar[,,1:(NpY-i1+1)] <-
@@ -92,7 +105,7 @@ read.cube<-function(
           )
         ncdf4::nc_close(nc)
       } else {
-        outar[,,1:(NpY-i1+1)]=NA
+        outar[,,1:(NpY-i1+1)] <- NA
       }
       #Read full "sandwich" years
       ifirst <- NpY-i1+2
@@ -106,38 +119,39 @@ read.cube<-function(
                 nc,
                 variable[ivar],
                 start = c(grid_x1,grid_y1,1),
-                count = c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY),
-                collapse_degen = TRUE
+                count = c(grid_x2-grid_x1+1,grid_y2-grid_y1+1, NpY),
+                collapse_degen = FALSE
               )
             ncdf4::nc_close(nc)
           } else {
-            outar[,,ifirst:(ifirst+NpY-1)]=NA
+            outar[, , ifirst:(ifirst + NpY - 1)] <- NA
           }
-            ifirst<-ifirst+NpY
+            ifirst <- ifirst + NpY
         }
       }
       #Read from last Year
       filenamecur <- file.path(cube$base.dir,"data",variable[ivar],paste0(y2,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
         nc <- ncdf4::nc_open(filenamecur)
-        outar[,,(ntime-i2+1):ntime] <-
+        outar[, , (ntime-i2+1):ntime] <-
           ncdf4::ncvar_get(
             nc,
             variable[ivar],
-            start = c(grid_x1,grid_y1,1),
-            count = c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2),
+            start = c(grid_x1, grid_y1, 1),
+            count = c(grid_x2 - grid_x1 + 1,grid_y2 - grid_y1 + 1, i2),
             collapse_degen = FALSE
           )
         ncdf4::nc_close(nc)
       } else {
-        outar[,,(ntime-i2+1):ntime]=NA
+        outar[, , (ntime-i2+1):ntime] <-  NA
       }
-      outlist$data[[variable[ivar]]]<-outar
+      outlist$data[[variable[ivar]]] <- outar
     }
   }
-  outlist
+
   ##value<<
   ##A named list where each list entry contains the data for a single variable.
+  outlist
 }
 
 .getTimesToRead<- function(time1, time2, config) {
