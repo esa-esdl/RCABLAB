@@ -31,29 +31,36 @@ read.cube<-function(
   ##author<<
   ##Fabian Gans, Miguel D. Mahecha, MPI BGC Jena, Germany, fgans@bgc-jena.mpg.de mmahecha@bgc-jena.mpg.de
   
-  if (length(longitude)== 1) longitude<-c(longitude,longitude)
-  if (length(latitude) == 1) latitude <-c(latitude ,latitude)
-  if (length(time)     == 1) time     <-c(time,time)
+  if (length(longitude)== 1) longitude <- c(longitude, longitude)
+  if (length(latitude) == 1) latitude  <- c(latitude, latitude)
+  if (length(time)     == 1) time      <- c(time, time)
   
   config  <- cube$config
-  grid_y1 = round((90.0 - latitude[2]) / config$spatial_res) - config$grid_y0 + 1
-  grid_y2 = round((90.0 - latitude[1]) / config$spatial_res) - config$grid_y0
-  grid_x1 = round((180.0 + longitude[1]) / config$spatial_res) - config$grid_x0 + 1
-  grid_x2 = round((180.0 + longitude[2]) / config$spatial_res) - config$grid_x0
+
+  with(config, {
+    grid_y1 <- round((90.0 - latitude[2]) / spatial_res) - grid_y0 + 1
+    grid_y2 <- round((90.0 - latitude[1]) / spatial_res) - grid_y0
+    grid_x1 <- round((180.0 + longitude[1]) / spatial_res) - grid_x0 + 1
+    grid_x2 <- round((180.0 + longitude[2]) / spatial_res) - grid_x0
+  })
   
-  if (grid_y1-1==grid_y2) grid_y2=grid_y2+1
-  if (grid_x1-1==grid_x2) grid_x2=grid_x2+1
+  if (grid_y1-1 == grid_y2) grid_y2 <- grid_y2 + 1
+  if (grid_x1-1 == grid_x2) grid_x2 <- grid_x2 + 1
   
-  r<-.getTimesToRead(time[1],time[2],config)
-  v=r$v
-  y1<-v[1];i1<-v[2];y2<-v[3];i2<-v[4];ntime<-v[5];NpY<-v[6]
-  outlist=list()
-  outlist$time=r$tout
-  outlist$longitude=((grid_x1:grid_x2)+config$grid_x0)*config$spatial_res-180-config$spatial_res/2
-  outlist$latitude=90-((grid_y1:grid_y2)+config$grid_y0)*config$spatial_res+config$spatial_res/2
-  outlist$data=list()
+  r <- .getTimesToRead(time[1],time[2],config)
+  v <- r$v
+  y1 <- v[1]; i1 <- v[2];
+  y2 <- v[3]; i2 <- v[4];
+  ntime <- v[5]; NpY <- v[6]
+
+  outlist <- list()
+  outlist$time      <- r$tout
+  outlist$longitude <- ((grid_x1:grid_x2)+config$grid_x0)*config$spatial_res-180-config$spatial_res/2
+  outlist$latitude  <- 90-((grid_y1:grid_y2)+config$grid_y0)*config$spatial_res+config$spatial_res/2
+  outlist$data      <- list()
+
   for (ivar in 1:length(variable)) {
-    if (y1==y2) {
+    if (y1 == y2) {
       filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
         nc<-ncdf4::nc_open(filenamecur)
