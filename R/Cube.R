@@ -37,12 +37,10 @@ read.cube<-function(
   
   config  <- cube$config
 
-  with(config, {
-    grid_y1 <- round((90.0 - latitude[2]) / spatial_res) - grid_y0 + 1
-    grid_y2 <- round((90.0 - latitude[1]) / spatial_res) - grid_y0
-    grid_x1 <- round((180.0 + longitude[1]) / spatial_res) - grid_x0 + 1
-    grid_x2 <- round((180.0 + longitude[2]) / spatial_res) - grid_x0
-  })
+  grid_y1 <- round((90.0 - latitude[2]) / config$spatial_res) - config$grid_y0 + 1
+  grid_y2 <- round((90.0 - latitude[1]) / config$spatial_res) - config$grid_y0
+  grid_x1 <- round((180.0 + longitude[1]) / config$spatial_res) - config$grid_x0 + 1
+  grid_x2 <- round((180.0 + longitude[2]) / config$spatial_res) - config$grid_x0
   
   if (grid_y1-1 == grid_y2) grid_y2 <- grid_y2 + 1
   if (grid_x1-1 == grid_x2) grid_x2 <- grid_x2 + 1
@@ -64,9 +62,17 @@ read.cube<-function(
       filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
         nc<-ncdf4::nc_open(filenamecur)
-        outlist[[variable[ivar]]] <- ncdf4::ncvar_get(nc,variable[ivar],start=c(grid_x1,grid_y1,i1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2-i1+1))
+        outlist[[variable[ivar]]] <-
+          ncdf4::ncvar_get(
+            nc,
+            variable[ivar],
+            start = c(grid_x1,grid_y1,i1),
+            count = c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2-i1+1),
+            collapse_degen = FALSE
+          )
         ncdf4::nc_close(nc)
       } else {
+        ## static variables
         outlist[[variable[ivar]]] <- array(NA,dim=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,ntime))
       }
     } else {
@@ -76,19 +82,33 @@ read.cube<-function(
       filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y1,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
         nc<-ncdf4::nc_open(filenamecur)
-        outar[,,1:(NpY-i1+1)]=ncdf4::ncvar_get(nc,variable[ivar],start=c(grid_x1,grid_y1,i1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY-i1+1))
+        outar[,,1:(NpY-i1+1)] <-
+          ncdf4::ncvar_get(
+            nc,
+            variable[ivar],
+            start = c(grid_x1,grid_y1,i1),
+            count = c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY-i1+1),
+            collapse_degen = FALSE
+          )
         ncdf4::nc_close(nc)
       } else {
         outar[,,1:(NpY-i1+1)]=NA
       }
       #Read full "sandwich" years
-      ifirst=NpY-i1+2
+      ifirst <- NpY-i1+2
       if (y1+1<y2) {
         for (y in (y1+1):(y2-1)) {
           filenamecur <- file.path(cube$base.dir,"data",variable[ivar],paste0(y,"_",variable[ivar],".nc"))
           if (file.exists(filenamecur)) {
-            nc<-ncdf4::nc_open(filenamecur)
-            outar[,,ifirst:(ifirst+NpY-1)]=ncdf4::ncvar_get(nc,variable[ivar],start=c(grid_x1,grid_y1,1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY))
+            nc <- ncdf4::nc_open(filenamecur)
+            outar[,,ifirst:(ifirst+NpY-1)] <-
+              ncdf4::ncvar_get(
+                nc,
+                variable[ivar],
+                start = c(grid_x1,grid_y1,1),
+                count = c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,NpY),
+                collapse_degen = TRUE
+              )
             ncdf4::nc_close(nc)
           } else {
             outar[,,ifirst:(ifirst+NpY-1)]=NA
@@ -97,10 +117,17 @@ read.cube<-function(
         }
       }
       #Read from last Year
-      filenamecur<-file.path(cube$base.dir,"data",variable[ivar],paste0(y2,"_",variable[ivar],".nc"))
+      filenamecur <- file.path(cube$base.dir,"data",variable[ivar],paste0(y2,"_",variable[ivar],".nc"))
       if (file.exists(filenamecur)) {
-        nc<-ncdf4::nc_open(filenamecur)
-        outar[,,(ntime-i2+1):ntime]=ncdf4::ncvar_get(nc,variable[ivar],start=c(grid_x1,grid_y1,1),count=c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2))
+        nc <- ncdf4::nc_open(filenamecur)
+        outar[,,(ntime-i2+1):ntime] <-
+          ncdf4::ncvar_get(
+            nc,
+            variable[ivar],
+            start = c(grid_x1,grid_y1,1),
+            count = c(grid_x2-grid_x1+1,grid_y2-grid_y1+1,i2),
+            collapse_degen = FALSE
+          )
         ncdf4::nc_close(nc)
       } else {
         outar[,,(ntime-i2+1):ntime]=NA
